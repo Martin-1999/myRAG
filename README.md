@@ -1,4 +1,4 @@
-# RAG0628
+# myRAG
 
 基于 Python 的本地 RAG 应用，包含 PDF 解析、分块、向量索引、混合召回、RRF 融合、Cross-Encoder 重排序、LLM 生成回答与 RAGAS 评估。前端使用 Vue，后端使用 FastAPI，默认都运行在 `127.0.0.1`。
 
