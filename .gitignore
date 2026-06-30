@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+node_modules/
+dist/
+.env
+models/
+data/uploads/*
+!data/uploads/.gitkeep
+data/parsed/*
+!data/parsed/.gitkeep
+data/chroma/*
+!data/chroma/.gitkeep
+logs/*
+!logs/.gitkeep
