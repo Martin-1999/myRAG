@@ -1,4 +1,4 @@
-# RAG0628
+# myRAG
 
 基于 Python 的本地 RAG 应用，包含 PDF 解析、分块、向量索引、混合召回、RRF 融合、Cross-Encoder 重排序、LLM 生成回答与 RAGAS 评估。前端使用 Vue，后端使用 FastAPI，默认都运行在 `127.0.0.1`。
 
@@ -41,13 +41,24 @@ environment.yml
 README.md
 ```
 
-## 环境准备
+## 运行说明
 
-### 1. 创建 Conda 环境
+### 1. 创建 Python 环境
+
+在项目根目录执行：
 
 ```bash
 conda env create -f environment.yml
 conda activate rag0628
+pip install -r requirements.txt
+```
+
+如果 `conda env create` 失败，也可以改用：
+
+```bash
+conda create -n rag0628 python=3.11 -y
+conda activate rag0628
+pip install -r requirements.txt
 ```
 
 ### 2. 安装前端依赖
@@ -55,11 +66,18 @@ conda activate rag0628
 ```bash
 cd frontend
 npm install
+cd ..
 ```
 
 ### 3. 配置 `.env`
 
-在项目根目录创建 `.env`，参考如下：
+先复制模板：
+
+```bash
+copy .env.example .env
+```
+
+推荐的本地运行配置如下：
 
 ```env
 HOST=127.0.0.1
@@ -71,9 +89,12 @@ MINERU_MODEL_PATH=./models/OpenDataLab/MinerU2___5-Pro-2605-1___2B
 MINERU_DEVICE_MAP=auto
 MINERU_IMAGE_ANALYSIS=false
 MINERU_PDF_DPI=144
-EMBEDDING_MODEL_NAME=Qwen/Qwen3-Embedding-8B
+
+EMBEDDING_MODEL_NAME=./models/Qwen/Qwen3-Embedding-0___6B
 EMBEDDING_DEVICE=cpu
-RERANKER_MODEL_NAME=cross-encoder/ms-marco-MiniLM-L-6-v2
+EMBEDDING_BATCH_SIZE=8
+
+RERANKER_MODEL_NAME=./models/cross-encoder/ms-marco-MiniLM-L6-v2
 RERANKER_DEVICE=cpu
 
 LLM_API_BASE=https://api.deepseek.com
@@ -83,29 +104,51 @@ LLM_TEMPERATURE=0.7
 LLM_MAX_TOKENS=4096
 ```
 
-## 启动方式
+如果你的 PyTorch 已经能识别 GPU，可以把这些值改成：
 
-### 启动后端
-
-```bash
-uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+```env
+MINERU_DEVICE_MAP=cuda:0
+EMBEDDING_DEVICE=cuda
+RERANKER_DEVICE=cuda
 ```
 
-接口地址：
+### 4. 启动后端
 
-- `GET /api/health`
-- `POST /api/ingest`
-- `POST /api/ask`
-- `POST /api/evaluate`
+```bash
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
+```
 
-### 启动前端
+后端启动成功后，健康检查地址：
+
+```text
+http://127.0.0.1:8000/api/health
+```
+
+### 5. 启动前端
+
+新开一个终端：
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-前端默认地址：`http://127.0.0.1:5173`
+前端默认地址：
+
+```text
+http://127.0.0.1:5173
+```
+
+### 6. 使用流程
+
+1. 打开前端页面
+2. 选择一个或多个 PDF
+3. 选择分块方式：`递归` 或 `固定大小`
+4. 设置 `chunk size` 和 `chunk overlap`
+5. 点击“上传并建库”
+6. 等待前端显示解析、切分、向量化、入库进度
+7. 入库完成后，在右侧输入问题并提问
+
 
 ## 后端实现说明
 
@@ -176,9 +219,3 @@ curl -X POST "http://127.0.0.1:8000/api/evaluate" \
 2. Qwen3-Embedding-8B 和 Cross-Encoder 首次加载模型体积较大，建议使用 GPU 或本地模型服务。
 3. DeepSeek API Key 请通过环境变量注入，不要直接写入代码仓库。
 4. 当前索引状态保存在进程内内存和 Chroma 中；服务重启后，BM25/TF-IDF 语料需要重新装载。若要长期运行，建议再增加本地 chunk 元数据持久化与启动恢复逻辑。
-
-## 后续建议
-
-1. 增加 chunk 元数据持久化文件与启动自动恢复
-2. 为 MinerU 表格结果增加结构化存储
-3. 为前端补充评估页面、历史会话和参数面板
