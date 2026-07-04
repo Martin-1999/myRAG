@@ -248,11 +248,3 @@ curl -X POST "http://127.0.0.1:8000/api/evaluate" \
   -H "Content-Type: application/json" \
   -d "{\"samples\":[{\"question\":\"Q1\",\"answer\":\"A1\",\"contexts\":[\"C1\"],\"ground_truth\":\"G1\"}]}"
 ```
-
-## 当前实现边界
-
-1. 本项目已经切到本地 Python 方式调用 MinerU 模型，不再走云端接口，也不依赖 `mineru` CLI。
-2. Qwen3-Embedding-8B 和 Cross-Encoder 首次加载模型体积较大，建议使用 GPU 或本地模型服务。
-3. DeepSeek API Key 请通过环境变量注入，不要直接写入代码仓库。
-4. 当前索引状态保存在进程内内存和 Chroma 中；服务重启后，BM25/TF-IDF 语料需要重新装载。若要长期运行，建议再增加本地 chunk 元数据持久化与启动恢复逻辑。
-5. `models/` 目录默认被 `.gitignore` 排除，不会上传到 GitHub；新环境需要先执行 `python download_models.py`。
