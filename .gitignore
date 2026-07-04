@@ -6,6 +6,7 @@ __pycache__/
 node_modules/
 dist/
 .env
+# Local models are downloaded on demand and are not committed.
 models/
 data/uploads/*
 !data/uploads/.gitkeep
@@ -15,4 +16,3 @@ data/chroma/*
 !data/chroma/.gitkeep
 logs/*
 !logs/.gitkeep
-test.py
