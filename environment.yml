@@ -1,4 +1,4 @@
-name: rag0628
+name: myRAG
 channels:
   - conda-forge
   - pytorch

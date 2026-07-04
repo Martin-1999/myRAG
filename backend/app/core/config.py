@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "RAG0628"
+    app_name: str = "myRAG"
     api_prefix: str = "/api"
     host: str = "127.0.0.1"
     port: int = 8000
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 4096
     llm_timeout_seconds: int = 120
 
-    chroma_collection_name: str = "rag0628_documents"
+    chroma_collection_name: str = "myRAG_documents"
 
 
 @lru_cache

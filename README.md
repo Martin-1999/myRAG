@@ -75,15 +75,15 @@ README.md
 
 ```bash
 conda env create -f environment.yml
-conda activate rag0628
+conda activate myRAG
 pip install -r requirements.txt
 ```
 
 如果 `conda env create` 失败，也可以改用：
 
 ```bash
-conda create -n rag0628 python=3.11 -y
-conda activate rag0628
+conda create -n myRAG python=3.11 -y
+conda activate myRAG
 pip install -r requirements.txt
 ```
 
