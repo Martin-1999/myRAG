@@ -20,7 +20,7 @@ class AnswerGenerator:
     async def generate(self, question: str, contexts: list[str]) -> tuple[str, str]:
         context_block = "\n\n".join(f"[Context {idx + 1}]\n{ctx}" for idx, ctx in enumerate(contexts))
         prompt = (
-            "你是一个严谨的RAG问答助手。请仅基于给定上下文回答问题，"
+            "你是一个严谨的RAG问答助手。请仅基于给定上下文回答问题，在回答常识问题时，可不仅限于上下文"
             "如果上下文不足，请明确说明。\n\n"
             f"{context_block}\n\n"
             f"问题：{question}\n回答："

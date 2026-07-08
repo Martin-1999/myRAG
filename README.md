@@ -41,7 +41,7 @@
 - `MINERU_IMAGE_ANALYSIS`：是否额外启用图片/图表分析，默认 `false`
 - `MINERU_PDF_DPI`：PDF 渲染为图片时的 DPI，越高越清晰，但越慢
 - `EMBEDDING_MODEL_NAME`：向量模型名称或本地路径
-- `EMBEDDING_DEVICE`：向量模型运行设备，常用值为 `cpu` 或 `cuda`
+- `EMBEDDING_DEVICE`：向量模型运行设备，可选 `cpu` 或 `cuda`
 - `EMBEDDING_BATCH_SIZE`：embedding 批大小，显存不足时可适当调小
 - `RERANKER_MODEL_NAME`：Cross-Encoder 模型名称或本地路径
 - `RERANKER_DEVICE`：Cross-Encoder 运行设备，常用值为 `cpu` 或 `cuda`
