@@ -7,7 +7,7 @@ node_modules/
 dist/
 .env
 # Local models are downloaded on demand and are not committed.
-models/
+/models/
 data/uploads/*
 !data/uploads/.gitkeep
 data/parsed/*

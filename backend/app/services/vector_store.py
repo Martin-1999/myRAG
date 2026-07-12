@@ -34,3 +34,7 @@ class VectorStore:
     def delete(self, ids: list[str]) -> None:
         if ids:
             self.collection.delete(ids=ids)
+
+    def delete_by_document_ids(self, document_ids: list[str]) -> None:
+        if document_ids:
+            self.collection.delete(where={"document_id": {"$in": document_ids}})

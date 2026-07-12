@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any, Callable
 
 from backend.app.core.config import get_settings
@@ -35,6 +37,46 @@ class RAGPipeline:
             self.retriever.refresh_corpus(self.chunk_records)
 
     def ingest_files(
+        self,
+        files: list[Path],
+        chunking_config: ChunkingConfig,
+        progress_callback: Callable[[int, str, str], None] | None = None,
+    ) -> tuple[list[str], list[str], int]:
+        """Ingest files while rolling back any partially-created index state."""
+        previous_records = list(self.chunk_records)
+        existing_parsed_paths = set(self.settings.parsed_dir.glob("*.json"))
+        try:
+            return self._ingest_files(files, chunking_config, progress_callback)
+        except Exception:
+            created_paths = set(self.settings.parsed_dir.glob("*.json")) - existing_parsed_paths
+            document_ids: list[str] = []
+            for path in created_paths:
+                try:
+                    document_ids.append(json.loads(path.read_text(encoding="utf-8"))["document_id"])
+                except (OSError, json.JSONDecodeError, KeyError):
+                    pass
+
+            try:
+                self.vector_store.delete_by_document_ids(document_ids)
+            except Exception:
+                pass
+            self.chunk_records = previous_records
+            try:
+                self._rewrite_chunk_records()
+            except Exception:
+                pass
+            try:
+                self.retriever.refresh_corpus(self.chunk_records)
+            except Exception:
+                pass
+            for path in created_paths:
+                try:
+                    path.unlink(missing_ok=True)
+                except OSError:
+                    pass
+            raise
+
+    def _ingest_files(
         self,
         files: list[Path],
         chunking_config: ChunkingConfig,
@@ -95,7 +137,7 @@ class RAGPipeline:
                 metadatas=[item["metadata"] for item in new_chunks],
             )
         self.chunk_records.extend(new_chunks)
-        self._persist_chunk_records(new_chunks)
+        self._persist_chunk_records()
         self.retriever.refresh_corpus(self.chunk_records)
         if progress_callback:
             progress_callback(100, "completed", "入库完成")
@@ -182,19 +224,30 @@ class RAGPipeline:
                 records.append(json.loads(line))
         return records
 
-    def _persist_chunk_records(self, records: list[dict]) -> None:
-        if not records:
-            return
+    def _persist_chunk_records(self) -> None:
+        self._write_chunk_records(self.chunk_records)
+
+    def _write_chunk_records(self, records: list[dict]) -> None:
         path = self.settings.chunk_store_path
-        with path.open("a", encoding="utf-8") as file:
+        with NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f"{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as file:
+            temporary_path = Path(file.name)
             for record in records:
                 file.write(json.dumps(record, ensure_ascii=False) + "\n")
+        try:
+            os.replace(temporary_path, path)
+        except Exception:
+            temporary_path.unlink(missing_ok=True)
+            raise
 
     def _rewrite_chunk_records(self) -> None:
-        path = self.settings.chunk_store_path
-        with path.open("w", encoding="utf-8") as file:
-            for record in self.chunk_records:
-                file.write(json.dumps(record, ensure_ascii=False) + "\n")
+        self._write_chunk_records(self.chunk_records)
 
     def _build_chunker(self, chunking_config: ChunkingConfig):
         if chunking_config.chunk_method == "fixed":

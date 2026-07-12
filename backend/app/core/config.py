@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     mineru_image_analysis: bool = False
     mineru_pdf_dpi: int = 144
 
-    embedding_model_name: str = "Qwen/Qwen3-Embedding-8B"
+    embedding_model_name: str = str(BASE_DIR / "models" / "Qwen" / "Qwen3-Embedding-0___6B")
     embedding_device: str = "cpu"
     embedding_batch_size: int = 8
     dense_top_k: int = 8
